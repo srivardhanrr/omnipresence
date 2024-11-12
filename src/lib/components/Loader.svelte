@@ -1,23 +1,23 @@
+<!-- src/lib/components/Loader.svelte -->
 <script>
     import { onMount } from 'svelte';
     import gsap from 'gsap';
+    import { browser } from '$app/environment';
 
-    let loaderWrapper;
-    let brandName;
-    let letterElements = [];
-    let overlayTop;
-    let overlayBottom;
+    let duration = 2.8;
+    let loaderContainer;
+    let textContainer;
+    let completed = $state(false);
 
-    export let onLoadComplete = () => {};
-
-    const letters = "omniprésence".split('');
+    // Text to animate
+    const text = "omniprésence";
+    const letters = text.split('');
 
     onMount(() => {
-        const tl = gsap.timeline({
-            onComplete: () => {
-                onLoadComplete();
-            }
-        });
+        if (!browser) return;
+
+        // Get all letter elements
+        const letterElements = textContainer.querySelectorAll('.letter');
 
         // Initial setup
         gsap.set(letterElements, {
@@ -25,66 +25,67 @@
             opacity: 0
         });
 
-        gsap.set([overlayTop, overlayBottom], {
-            height: '50vh'
+        const tl = gsap.timeline({
+            onComplete: () => {
+                completed = true;
+                // Use a custom event for completion
+                const event = new CustomEvent('loaderComplete');
+                document.dispatchEvent(event);
+            }
         });
 
         // Animation sequence
-        tl.to(letterElements, {
-            y: 0,
-            opacity: 1,
-            duration: 1.2,
-            stagger: 0.05,
-            ease: "power3.out"
-        })
-            .to(brandName, {
-                scale: 0.9,
-                duration: 1,
+        tl
+            // Fade in the white background
+            .from(loaderContainer, {
+                opacity: 0,
+                duration: 0.5,
                 ease: "power2.inOut"
             })
-            .to([overlayTop, overlayBottom], {
-                height: 0,
-                duration: 1.2,
-                ease: "power4.inOut",
-            }, "-=0.5")
-            .to(loaderWrapper, {
+            // Animate in each letter
+            .to(letterElements, {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                stagger: 0.05,
+                ease: "power4.out"
+            })
+            // Short pause to show the complete text
+            .to(letterElements, {
+                y: -100,
                 opacity: 0,
-                duration: 0.3,
-                ease: "power2.inOut"
-            });
+                duration: 0.8,
+                stagger: 0.02,
+                ease: "power4.in"
+            }, "+=0.5")
+            // Slide up the white background
+            .to(loaderContainer, {
+                yPercent: -100,
+                duration: 1,
+                ease: "power4.inOut"
+            }, "-=0.3");
     });
 </script>
 
 <div
-        bind:this={loaderWrapper}
-        class="fixed inset-0 z-50 flex items-center justify-center bg-white overflow-hidden"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-white"
+        class:pointer-events-none={completed}
+        bind:this={loaderContainer}
 >
-    <!-- Top overlay -->
-    <div
-            bind:this={overlayTop}
-            class="absolute top-0 left-0 w-full bg-black"
-    ></div>
-
-    <!-- Bottom overlay -->
-    <div
-            bind:this={overlayBottom}
-            class="absolute bottom-0 left-0 w-full bg-black"
-    ></div>
-
-    <!-- Brand name container -->
-    <div
-            bind:this={brandName}
-            class="relative z-10 overflow-hidden"
+    <h1
+            bind:this={textContainer}
+            class="text-black text-4xl md:text-6xl lg:text-7xl font-light tracking-wider overflow-hidden flex items-center"
     >
-        <div class="flex items-center justify-center">
-            {#each letters as letter, i}
-                <span
-                        bind:this={letterElements[i]}
-                        class="inline-block text-4xl md:text-6xl lg:text-7xl font-light tracking-wider text-black"
-                >
-                    {letter}
-                </span>
-            {/each}
-        </div>
-    </div>
+        {#each letters as letter}
+            <span class="letter inline-block">{letter}</span>
+        {/each}
+    </h1>
 </div>
+
+<style>
+    .letter {
+        will-change: transform;
+        display: inline-block;
+        min-width: 0.1em;
+    }
+</style>
