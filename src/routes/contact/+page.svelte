@@ -45,19 +45,19 @@
                     <h1 class="text-5xl font-light tracking-wider mb-12">CONTACT</h1>
 
                     <div class="space-y-1">
-                        <p>3392 Marine Drive</p>
-                        <p>West Vancouver, BC</p>
-                        <p>Canada V7V 1M9</p>
+                        <p>Marine Drive</p>
+                        <p>BLR, KA</p>
+                        <p>INDIA</p>
                     </div>
 
                     <div class="space-y-1">
-                        <p>Tel: 604-925-5170</p>
-                        <p>Fax: 604-925-5176</p>
-                        <p>info@lamoureuxarchitect.ca</p>
+                        <p>Tel: 000-000-000</p>
+                        <p>Fax: 000-000-000</p>
+                        <p>info@omnipresence.studio</p>
                     </div>
 
                     <div class="mt-8 text-sm text-white/70 max-w-md">
-                        <p>We are currently actively seeking applications from Architects, Architectural Technologists and Interior Designers. Please send Resumes and Portfolios (Max 10mb) to info@lamoureuxarchitect.ca.</p>
+                        <p>We currently reply within 24 hours from Architects, Architectural Technologists and Interior Designers. Please be patient or call 000-000-000.</p>
                     </div>
                 </div>
 

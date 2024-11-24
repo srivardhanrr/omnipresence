@@ -12,14 +12,15 @@
     let isDragging = false;
     let startX;
     let scrollLeft;
+    let imageRefs = [];
 
     const projects = [
         {
             id: 1,
-            title: 'DESIGN MATTERS',
-            subtitle: 'LONDON DESIGN STUDIO',
-            description: 'Architecture and Interior Design Studio - London',
-            image: '/images/portfolio/residential.png',
+            title: 'URBAN LIVING',
+            subtitle: 'CONTEMPORARY SPACES',
+            description: 'Architecture and Interior Design',
+            image: '/images/portfolio/interior.jpg',
             category: 'RESIDENTIAL'
         },
         {
@@ -27,7 +28,7 @@
             title: 'URBAN LIVING',
             subtitle: 'CONTEMPORARY SPACES',
             description: 'Modern Urban Development Project',
-            image: '/images//portfolio/heritage.png',
+            image: '/images/portfolio/heritage.png',
             category: 'RESIDENTIAL'
         },
         // Add more projects as needed
@@ -36,6 +37,9 @@
     let tl = gsap.timeline({ paused: true });
 
     onMount(() => {
+        // Initialize zoom animation for the first image
+        startImageZoom(currentProject);
+
         // Initialize the timeline for grid view transition
         tl = gsap.timeline({
             paused: true,
@@ -43,7 +47,7 @@
         });
 
         tl.to(mainContainer, {
-            scale: 0.65, // Increased zoom out
+            scale: 0.65,
             duration: 1.2,
         })
             .to(projectsContainer, {
@@ -72,7 +76,6 @@
             window.addEventListener('touchend', stopDragging);
         }
 
-        // Subscribe to grid view changes
         return isGridView.subscribe(value => {
             if (value) {
                 tl.play();
@@ -85,6 +88,43 @@
             }
         });
     });
+
+    function startImageZoom(index) {
+        if (imageRefs[index]) {
+            gsap.fromTo(imageRefs[index],
+                { scale: 1 },
+                {
+                    scale: 1.1,
+                    duration: 20,
+                    ease: "none",
+                    repeat: -1,
+                    yoyo: true
+                }
+            );
+        }
+    }
+
+    function selectProject(index) {
+        if (currentProject === index) return;
+
+        // Stop current zoom animation
+        if (imageRefs[currentProject]) {
+            gsap.killTweensOf(imageRefs[currentProject]);
+        }
+
+        gsap.to(sliderContainer, {
+            scrollLeft: index * sliderContainer.offsetWidth,
+            duration: 1,
+            ease: "power3.inOut",
+            onComplete: () => {
+                // Start new zoom animation
+                startImageZoom(index);
+            }
+        });
+
+        currentProject = index;
+        isGridView.set(false);
+    }
 
     function startDragging(e) {
         isDragging = true;
@@ -103,17 +143,6 @@
     function stopDragging() {
         isDragging = false;
     }
-
-    function selectProject(index) {
-        if (currentProject === index) return;
-        gsap.to(sliderContainer, {
-            scrollLeft: index * sliderContainer.offsetWidth,
-            duration: 1,
-            ease: "power3.inOut"
-        });
-        currentProject = index;
-        isGridView.set(false);
-    }
 </script>
 
 <div class="relative w-full h-screen overflow-hidden bg-black" bind:this={mainContainer}>
@@ -130,9 +159,10 @@
             {#each projects as project, i}
                 <div class="min-w-full h-full snap-center relative flex-shrink-0">
                     <img
+                            bind:this={imageRefs[i]}
                             src={project.image}
                             alt={project.title}
-                            class="absolute inset-0 w-full h-full object-cover"
+                            class="absolute inset-0 w-full h-full object-cover transform-gpu"
                     />
 
                     <div class="absolute bottom-20 left-20 text-white z-10 project-info">
@@ -147,9 +177,7 @@
 
     <!-- Grid View -->
     {#if $isGridView}
-        <div
-                class="grid-projects fixed inset-0 invisible opacity-0 pt-32 pb-20 px-20"
-        >
+        <div class="grid-projects fixed inset-0 invisible opacity-0 pt-32 pb-20 px-20">
             <div class="grid grid-cols-2 gap-8 h-full">
                 {#each projects as project, i}
                     <button
@@ -188,7 +216,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    /* Prevent image dragging */
     img {
         user-drag: none;
         -webkit-user-drag: none;
@@ -198,7 +225,6 @@
         -ms-user-select: none;
     }
 
-    /* Custom scrollbar styling */
     .snap-x::-webkit-scrollbar {
         display: none;
     }
